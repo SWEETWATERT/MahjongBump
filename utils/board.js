@@ -103,6 +103,9 @@ function drawTable(ctx, layout, errorProgress) {
 }
 
 function drawBoard(ctx, board, layout, viewState) {
+  const shake = viewState.shakeOffset || { x: 0, y: 0 };
+  ctx.save();
+  ctx.translate(shake.x, shake.y);
   drawTable(ctx, layout, viewState.errorProgress || 0);
 
   board.forEach((row) => {
@@ -119,6 +122,7 @@ function drawBoard(ctx, board, layout, viewState) {
       });
     });
   });
+  ctx.restore();
 }
 
 module.exports = {

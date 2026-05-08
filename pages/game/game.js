@@ -153,6 +153,7 @@ Page({
     this.clearAutoHint();
     this.game.hintIds = [];
     this.effect.clearLine();
+    this.effect.playTap(this.layout, tile);
 
     if (!this.game.selected) {
       this.game.selected = tile;
@@ -322,10 +323,12 @@ Page({
       selectedId: this.game.selected ? this.game.selected.id : "",
       hintIds: this.game.hintIds,
       images: this.images,
-      errorProgress: this.effect ? this.effect.state.errorProgress : 0
+      errorProgress: this.effect ? this.effect.state.errorProgress : 0,
+      shakeOffset: this.effect ? this.effect.shakeOffset() : { x: 0, y: 0 }
     });
     if (this.effect) {
       this.effect.drawLine(this.ctx, this.layout);
+      this.effect.drawTapFeedback(this.ctx);
       this.effect.drawParticles(this.ctx);
     }
   }

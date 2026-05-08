@@ -66,7 +66,9 @@ function createEffectEngine(canvas, render) {
     linePath: [],
     lineProgress: 0,
     particles: [],
+    taps: [],
     errorProgress: 0,
+    shakeProgress: 0,
     running: false,
     frameId: null
   };
@@ -103,6 +105,15 @@ function createEffectEngine(canvas, render) {
     if (state.errorProgress > 0) {
       state.errorProgress = clamp(state.errorProgress - 0.08, 0, 1);
     }
+    if (state.shakeProgress > 0) {
+      state.shakeProgress = clamp(state.shakeProgress - 0.12, 0, 1);
+    }
+    state.taps = state.taps
+      .map((tap) => ({
+        ...tap,
+        life: tap.life - 0.075
+      }))
+      .filter((tap) => tap.life > 0);
     state.particles = state.particles
       .map((particle) => ({
         ...particle,
@@ -126,6 +137,17 @@ function createEffectEngine(canvas, render) {
 
   function playError() {
     state.errorProgress = 1;
+    state.shakeProgress = 1;
+  }
+
+  function playTap(layout, tile) {
+    const rect = Tile.getRect(layout, tile, 1);
+    state.taps.push({
+      x: rect.centerX,
+      y: rect.centerY,
+      radius: Math.max(rect.width, rect.height) * 0.36,
+      life: 1
+    });
   }
 
   function playParticles(layout, tiles) {
@@ -190,6 +212,33 @@ function createEffectEngine(canvas, render) {
     });
   }
 
+  function drawTapFeedback(ctx) {
+    state.taps.forEach((tap) => {
+      const progress = 1 - tap.life;
+      ctx.save();
+      ctx.globalAlpha = clamp(tap.life, 0, 1) * 0.55;
+      ctx.strokeStyle = "#fff176";
+      ctx.lineWidth = 3;
+      ctx.shadowBlur = 16;
+      ctx.shadowColor = "rgba(255, 248, 132, 0.95)";
+      ctx.beginPath();
+      ctx.arc(tap.x, tap.y, tap.radius + progress * 22, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.restore();
+    });
+  }
+
+  function shakeOffset() {
+    if (state.shakeProgress <= 0) {
+      return { x: 0, y: 0 };
+    }
+    const wave = Math.sin((1 - state.shakeProgress) * Math.PI * 8);
+    return {
+      x: wave * state.shakeProgress * 10,
+      y: 0
+    };
+  }
+
   return {
     state,
     start,
@@ -197,9 +246,12 @@ function createEffectEngine(canvas, render) {
     playLine,
     clearLine,
     playError,
+    playTap,
     playParticles,
     drawLine,
-    drawParticles
+    drawParticles,
+    drawTapFeedback,
+    shakeOffset
   };
 }
 
