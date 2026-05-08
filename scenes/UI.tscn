@@ -19,6 +19,9 @@ offset_top = 12.0
 offset_right = 250.0
 offset_bottom = 58.0
 theme_override_font_sizes/font_size = 32
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.4)
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 2
 text = "分数 0"
 
 [node name="TimeLabel" type="Label" parent="TopPanel"]
@@ -27,6 +30,9 @@ offset_top = 12.0
 offset_right = 460.0
 offset_bottom = 58.0
 theme_override_font_sizes/font_size = 32
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.4)
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 2
 text = "时间 60"
 
 [node name="RemainLabel" type="Label" parent="TopPanel"]
@@ -35,6 +41,9 @@ offset_top = 12.0
 offset_right = 650.0
 offset_bottom = 58.0
 theme_override_font_sizes/font_size = 32
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.4)
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 2
 text = "剩余 0"
 
 [node name="ComboLabel" type="Label" parent="TopPanel"]
@@ -44,6 +53,9 @@ offset_right = 650.0
 offset_bottom = 118.0
 theme_override_font_sizes/font_size = 40
 theme_override_colors/font_color = Color(1, 0.913725, 0.270588, 1)
+theme_override_colors/font_shadow_color = Color(0.35, 0.12, 0, 0.65)
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 3
 text = ""
 horizontal_alignment = 1
 
@@ -55,6 +67,9 @@ offset_top = 170.0
 offset_right = -28.0
 offset_bottom = 228.0
 theme_override_font_sizes/font_size = 30
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.55)
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 3
 horizontal_alignment = 1
 text = "点击两张相同麻将，最多2折线消除"
 

@@ -1,9 +1,13 @@
-[gd_scene load_steps=5 format=3 uid="uid://mahjong_main"]
+[gd_scene load_steps=7 format=3 uid="uid://mahjong_main"]
 
 [ext_resource type="Script" path="res://scripts/game_manager.gd" id="1"]
 [ext_resource type="PackedScene" path="res://scenes/Board.tscn" id="2"]
 [ext_resource type="PackedScene" path="res://scenes/UI.tscn" id="3"]
 [ext_resource type="Script" path="res://scripts/effects.gd" id="4"]
+[ext_resource type="Shader" path="res://shaders/background_gradient.gdshader" id="5"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_bg"]
+shader = ExtResource("5")
 
 [node name="Main" type="Node2D"]
 script = ExtResource("1")
@@ -14,7 +18,8 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0.027451, 0.231373, 0.145098, 1)
+material = SubResource("ShaderMaterial_bg")
+color = Color(1, 1, 1, 1)
 
 [node name="Board" parent="." instance=ExtResource("2")]
 position = Vector2(360, 660)

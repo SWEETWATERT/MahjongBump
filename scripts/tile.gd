@@ -47,23 +47,26 @@ func setup(id: String, pos: Vector2i, texture: Texture2D) -> void:
 func apply_data() -> void:
 	label.text = LABELS.get(tile_id, tile_id)
 	icon.texture = _texture
+	_apply_text_color()
 	glow.color.a = 0.0
 	_base_position = position
 
 func set_selected(value: bool) -> void:
 	selected = value
-	var target_scale := Vector2(1.1, 1.1) if value else Vector2.ONE
-	var target_y := _base_position.y - 10.0 if value else _base_position.y
-	var glow_alpha := 0.42 if value else 0.0
+	var target_scale := Vector2(1.12, 1.12) if value else Vector2.ONE
+	var target_y := _base_position.y - 12.0 if value else _base_position.y
+	var glow_alpha := 0.62 if value else 0.0
 	var tween := create_tween().set_parallel(true)
-	tween.tween_property(self, "scale", target_scale, 0.12).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-	tween.tween_property(self, "position:y", target_y, 0.12).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-	tween.tween_property(glow, "color:a", glow_alpha, 0.12)
+	tween.tween_property(self, "scale", target_scale, 0.14).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tween.tween_property(self, "position:y", target_y, 0.14).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	tween.tween_property(glow, "color:a", glow_alpha, 0.14)
 
 func play_tap() -> void:
+	var target := Vector2(1.12, 1.12) if selected else Vector2.ONE
 	var tween := create_tween()
-	tween.tween_property(self, "scale", Vector2(1.08, 1.08), 0.06).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-	tween.tween_property(self, "scale", Vector2(1.0, 1.0), 0.10).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	tween.tween_property(self, "scale", target * 0.94, 0.045).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	tween.tween_property(self, "scale", target * 1.08, 0.07).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tween.tween_property(self, "scale", target, 0.10).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 
 func play_remove() -> void:
 	removed = true
@@ -93,14 +96,8 @@ func _on_input_event(_viewport: Node, event: InputEvent, _shape_idx: int) -> voi
 
 func _build_shape() -> void:
 	var half := Global.TILE_SIZE * 0.5
-	var front := PackedVector2Array([
-		Vector2(-half.x, -half.y + 8), Vector2(half.x, -half.y + 8),
-		Vector2(half.x, half.y - 5), Vector2(-half.x, half.y - 5)
-	])
-	var thick := PackedVector2Array([
-		Vector2(-half.x, -half.y + 12), Vector2(half.x, -half.y + 12),
-		Vector2(half.x, half.y + 7), Vector2(-half.x, half.y + 7)
-	])
+	var front := _rounded_rect_points(Vector2(-half.x, -half.y + 7), Vector2(Global.TILE_SIZE.x, Global.TILE_SIZE.y - 12), 10.0, 5)
+	var thick := _rounded_rect_points(Vector2(-half.x - 1, -half.y + 11), Vector2(Global.TILE_SIZE.x + 2, Global.TILE_SIZE.y - 4), 11.0, 5)
 	body.polygon = thick
 	face.polygon = front
 	shadow.polygon = thick
@@ -108,10 +105,30 @@ func _build_shape() -> void:
 		Vector2(-half.x + 10, -half.y + 14), Vector2(half.x - 10, -half.y + 14),
 		Vector2(half.x - 18, -half.y + 36), Vector2(-half.x + 18, -half.y + 36)
 	])
-	glow.polygon = PackedVector2Array([
-		Vector2(-half.x - 6, -half.y + 2), Vector2(half.x + 6, -half.y + 2),
-		Vector2(half.x + 6, half.y + 10), Vector2(-half.x - 6, half.y + 10)
-	])
+	glow.polygon = _rounded_rect_points(Vector2(-half.x - 8, -half.y + 0), Vector2(Global.TILE_SIZE.x + 16, Global.TILE_SIZE.y + 12), 16.0, 5)
 	var shape := RectangleShape2D.new()
 	shape.size = Global.TILE_SIZE
 	collision.shape = shape
+
+func _rounded_rect_points(origin: Vector2, size: Vector2, radius: float, steps: int) -> PackedVector2Array:
+	var points := PackedVector2Array()
+	var corners := [
+		{"center": origin + Vector2(radius, radius), "from": PI, "to": PI * 1.5},
+		{"center": origin + Vector2(size.x - radius, radius), "from": PI * 1.5, "to": TAU},
+		{"center": origin + Vector2(size.x - radius, size.y - radius), "from": 0.0, "to": PI * 0.5},
+		{"center": origin + Vector2(radius, size.y - radius), "from": PI * 0.5, "to": PI}
+	]
+	for corner in corners:
+		for i in range(steps + 1):
+			var t := float(i) / float(steps)
+			var angle: float = lerp(corner.from, corner.to, t)
+			points.append(corner.center + Vector2(cos(angle), sin(angle)) * radius)
+	return points
+
+func _apply_text_color() -> void:
+	var color := Color(0.12, 0.08, 0.04)
+	if tile_id.begins_with("tiao") or tile_id == "green":
+		color = Color(0.02, 0.42, 0.18)
+	elif tile_id.begins_with("tong") or tile_id == "red":
+		color = Color(0.75, 0.08, 0.06)
+	label.add_theme_color_override("font_color", color)
