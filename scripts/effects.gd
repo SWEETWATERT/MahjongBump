@@ -54,9 +54,9 @@ func play_combo(combo: int, target: CanvasItem) -> void:
 
 func play_error_flash(target: CanvasItem) -> void:
 	var tween := create_tween()
-	tween.tween_property(target, "modulate", Color(1.0, 0.22, 0.18, 1), 0.045)
+	tween.tween_property(target, "modulate", Color(1.0, 0.16, 0.12, 1), 0.045)
 	tween.tween_property(target, "modulate", Color.WHITE, 0.09)
-	tween.tween_property(target, "modulate", Color(1.0, 0.36, 0.30, 1), 0.045)
+	tween.tween_property(target, "modulate", Color(1.0, 0.30, 0.24, 1), 0.045)
 	tween.tween_property(target, "modulate", Color.WHITE, 0.14)
 
 func shake(target: Node2D) -> void:

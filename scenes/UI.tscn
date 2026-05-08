@@ -11,14 +11,14 @@ anchor_right = 1.0
 offset_left = 24.0
 offset_top = 28.0
 offset_right = -24.0
-offset_bottom = 158.0
+offset_bottom = 170.0
 
 [node name="ScoreLabel" type="Label" parent="TopPanel"]
 offset_left = 24.0
 offset_top = 12.0
 offset_right = 250.0
 offset_bottom = 58.0
-theme_override_font_sizes/font_size = 32
+theme_override_font_sizes/font_size = 36
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.4)
 theme_override_constants/shadow_offset_x = 2
 theme_override_constants/shadow_offset_y = 2
@@ -29,7 +29,7 @@ offset_left = 250.0
 offset_top = 12.0
 offset_right = 460.0
 offset_bottom = 58.0
-theme_override_font_sizes/font_size = 32
+theme_override_font_sizes/font_size = 36
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.4)
 theme_override_constants/shadow_offset_x = 2
 theme_override_constants/shadow_offset_y = 2
@@ -40,7 +40,7 @@ offset_left = 460.0
 offset_top = 12.0
 offset_right = 650.0
 offset_bottom = 58.0
-theme_override_font_sizes/font_size = 32
+theme_override_font_sizes/font_size = 36
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.4)
 theme_override_constants/shadow_offset_x = 2
 theme_override_constants/shadow_offset_y = 2
@@ -48,10 +48,10 @@ text = "剩余 0"
 
 [node name="ComboLabel" type="Label" parent="TopPanel"]
 offset_left = 24.0
-offset_top = 68.0
+offset_top = 76.0
 offset_right = 650.0
-offset_bottom = 118.0
-theme_override_font_sizes/font_size = 40
+offset_bottom = 134.0
+theme_override_font_sizes/font_size = 46
 theme_override_colors/font_color = Color(1, 0.913725, 0.270588, 1)
 theme_override_colors/font_shadow_color = Color(0.35, 0.12, 0, 0.65)
 theme_override_constants/shadow_offset_x = 2
@@ -63,10 +63,10 @@ horizontal_alignment = 1
 anchors_preset = 10
 anchor_right = 1.0
 offset_left = 28.0
-offset_top = 170.0
+offset_top = 184.0
 offset_right = -28.0
-offset_bottom = 228.0
-theme_override_font_sizes/font_size = 30
+offset_bottom = 248.0
+theme_override_font_sizes/font_size = 34
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.55)
 theme_override_constants/shadow_offset_x = 2
 theme_override_constants/shadow_offset_y = 3
@@ -85,16 +85,16 @@ offset_bottom = -28.0
 theme_override_constants/separation = 18
 
 [node name="ShuffleButton" type="Button" parent="BottomPanel"]
-custom_minimum_size = Vector2(210, 92)
-theme_override_font_sizes/font_size = 34
+custom_minimum_size = Vector2(210, 98)
+theme_override_font_sizes/font_size = 38
 text = "洗牌"
 
 [node name="HintButton" type="Button" parent="BottomPanel"]
-custom_minimum_size = Vector2(210, 92)
-theme_override_font_sizes/font_size = 34
+custom_minimum_size = Vector2(210, 98)
+theme_override_font_sizes/font_size = 38
 text = "提示"
 
 [node name="RestartButton" type="Button" parent="BottomPanel"]
-custom_minimum_size = Vector2(210, 92)
-theme_override_font_sizes/font_size = 34
+custom_minimum_size = Vector2(210, 98)
+theme_override_font_sizes/font_size = 38
 text = "重来"

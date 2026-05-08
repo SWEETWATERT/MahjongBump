@@ -53,16 +53,16 @@ func apply_data() -> void:
 
 func set_selected(value: bool) -> void:
 	selected = value
-	var target_scale := Vector2(1.12, 1.12) if value else Vector2.ONE
-	var target_y := _base_position.y - 12.0 if value else _base_position.y
-	var glow_alpha := 0.62 if value else 0.0
+	var target_scale := Vector2(1.14, 1.14) if value else Vector2.ONE
+	var target_y := _base_position.y - 14.0 if value else _base_position.y
+	var glow_alpha := 0.72 if value else 0.0
 	var tween := create_tween().set_parallel(true)
 	tween.tween_property(self, "scale", target_scale, 0.14).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	tween.tween_property(self, "position:y", target_y, 0.14).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	tween.tween_property(glow, "color:a", glow_alpha, 0.14)
 
 func play_tap() -> void:
-	var target := Vector2(1.12, 1.12) if selected else Vector2.ONE
+	var target := Vector2(1.14, 1.14) if selected else Vector2.ONE
 	var tween := create_tween()
 	tween.tween_property(self, "scale", target * 0.94, 0.045).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	tween.tween_property(self, "scale", target * 1.08, 0.07).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
@@ -96,8 +96,8 @@ func _on_input_event(_viewport: Node, event: InputEvent, _shape_idx: int) -> voi
 
 func _build_shape() -> void:
 	var half := Global.TILE_SIZE * 0.5
-	var front := _rounded_rect_points(Vector2(-half.x, -half.y + 7), Vector2(Global.TILE_SIZE.x, Global.TILE_SIZE.y - 12), 10.0, 5)
-	var thick := _rounded_rect_points(Vector2(-half.x - 1, -half.y + 11), Vector2(Global.TILE_SIZE.x + 2, Global.TILE_SIZE.y - 4), 11.0, 5)
+	var front := _rounded_rect_points(Vector2(-half.x, -half.y + 7), Vector2(Global.TILE_SIZE.x, Global.TILE_SIZE.y - 12), 12.0, 6)
+	var thick := _rounded_rect_points(Vector2(-half.x - 2, -half.y + 12), Vector2(Global.TILE_SIZE.x + 4, Global.TILE_SIZE.y - 2), 13.0, 6)
 	body.polygon = thick
 	face.polygon = front
 	shadow.polygon = thick
@@ -105,7 +105,7 @@ func _build_shape() -> void:
 		Vector2(-half.x + 10, -half.y + 14), Vector2(half.x - 10, -half.y + 14),
 		Vector2(half.x - 18, -half.y + 36), Vector2(-half.x + 18, -half.y + 36)
 	])
-	glow.polygon = _rounded_rect_points(Vector2(-half.x - 8, -half.y + 0), Vector2(Global.TILE_SIZE.x + 16, Global.TILE_SIZE.y + 12), 16.0, 5)
+	glow.polygon = _rounded_rect_points(Vector2(-half.x - 10, -half.y - 2), Vector2(Global.TILE_SIZE.x + 20, Global.TILE_SIZE.y + 16), 18.0, 6)
 	var shape := RectangleShape2D.new()
 	shape.size = Global.TILE_SIZE
 	collision.shape = shape

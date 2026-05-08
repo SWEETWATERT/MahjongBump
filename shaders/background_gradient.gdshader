@@ -9,7 +9,10 @@ void fragment() {
 	float y = UV.y;
 	vec4 grad = mix(top_color, mid_color, smoothstep(0.0, 0.52, y));
 	grad = mix(grad, bottom_color, smoothstep(0.42, 1.0, y));
-	float dist = distance(UV, vec2(0.5, 0.38));
+	float center_light = 1.0 - smoothstep(0.0, 0.62, distance(UV, vec2(0.5, 0.36)));
+	float table_fiber = sin((UV.x + UV.y * 0.38) * 92.0) * 0.012;
+	float dist = distance(UV, vec2(0.5, 0.42));
 	float vignette = smoothstep(0.30, 0.88, dist) * vignette_strength;
-	COLOR = vec4(grad.rgb * (1.0 - vignette), 1.0);
+	vec3 color = grad.rgb + vec3(center_light * 0.06 + table_fiber);
+	COLOR = vec4(color * (1.0 - vignette), 1.0);
 }
