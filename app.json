@@ -1,0 +1,14 @@
+{
+  "pages": [
+    "pages/game/game",
+    "pages/index/index"
+  ],
+  "window": {
+    "navigationBarTitleText": "麻将对对碰",
+    "navigationBarBackgroundColor": "#0a6b43",
+    "navigationBarTextStyle": "white",
+    "backgroundColor": "#0d7a4d"
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json"
+}
