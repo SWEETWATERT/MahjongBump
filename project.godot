@@ -1,0 +1,30 @@
+; Engine configuration file.
+; Godot 4 project for MahjongBump.
+
+config_version=5
+
+[application]
+config/name="MahjongBump"
+run/main_scene="res://scenes/Main.tscn"
+config/features=PackedStringArray("4.2", "Mobile")
+config/icon="res://assets/ui/icon.svg"
+
+[autoload]
+Global="*res://autoload/Global.gd"
+
+[display]
+window/size/viewport_width=720
+window/size/viewport_height=1280
+window/handheld/orientation=1
+window/stretch/mode="canvas_items"
+window/stretch/aspect="expand"
+
+[input]
+tap={
+"deadzone": 0.5,
+"events": []
+}
+
+[rendering]
+renderer/rendering_method="mobile"
+textures/canvas_textures/default_texture_filter=1

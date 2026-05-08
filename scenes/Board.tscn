@@ -1,0 +1,12 @@
+[gd_scene load_steps=3 format=3 uid="uid://mahjong_board"]
+
+[ext_resource type="Script" path="res://scripts/board.gd" id="1"]
+[ext_resource type="PackedScene" path="res://scenes/Tile.tscn" id="2"]
+
+[node name="Board" type="Node2D"]
+script = ExtResource("1")
+tile_scene = ExtResource("2")
+
+[node name="Table" type="Polygon2D" parent="."]
+color = Color(0.031373, 0.396078, 0.239216, 1)
+polygon = PackedVector2Array(-330, -470, 330, -470, 330, 470, -330, 470)

@@ -1,50 +1,125 @@
 # MahjongBump
 
-微信小程序原生版麻将对对碰。主入口是 `pages/game/game`，棋盘、牌面、连线、点击反馈和消除粒子都使用 Canvas 统一绘制。
+Godot 4 棋牌休闲小游戏版本。目标是 2.5D 立体麻将对对碰，面向后续微信小游戏导出。
 
-## 项目结构
+## 1. Godot 项目结构
 
 ```text
-.
-├── app.js                 小程序启动入口
-├── app.json               页面入口和导航栏配置
-├── app.wxss               全局背景和基础样式
-├── pages/
-│   └── game/
-│       ├── game.wxml      游戏界面：顶部信息、Canvas、底部按钮
-│       ├── game.wxss      游戏化绿色桌面、大字体、现代按钮
-│       ├── game.js        游戏流程：点击、计分、倒计时、提示、洗牌、过关
-│       └── game.json      游戏页标题配置
-├── utils/
-│   ├── board.js           棋盘生成、布局、命中检测、桌面绘制
-│   ├── tile.js            麻将牌资料和白底、阴影、圆角、高光绘制
-│   ├── match.js           经典连连看连线算法，最多允许2次转折
-│   ├── effect.js          requestAnimationFrame 动画、连线、红闪、粒子
-│   ├── ui.js              UI 数据更新控制，减少 setData 调用
-│   ├── shuffle.js         剩余麻将洗牌，并保证洗牌后尽量有可消除组合
-│   └── timer.js           60秒倒计时封装
-└── assets/
-    └── tiles/             麻将牌图片，使用英文文件名避免乱码和加载失败
+project/
+├── project.godot
+├── scenes/
+│   ├── Main.tscn
+│   ├── Board.tscn
+│   ├── Tile.tscn
+│   └── UI.tscn
+├── scripts/
+│   ├── board.gd
+│   ├── tile.gd
+│   ├── match.gd
+│   ├── effects.gd
+│   ├── ui.gd
+│   └── game_manager.gd
+├── assets/
+│   ├── tiles/
+│   ├── particles/
+│   ├── sounds/
+│   └── ui/
+├── shaders/
+│   └── tile_glow.gdshader
+└── autoload/
+    └── Global.gd
 ```
 
-## 玩法与功能
+## 2. 场景结构
 
-- 点击两张相同麻将牌，路径可连接且最多2次转折即可消除。
-- 全部消除即过关。
-- 倒计时60秒，超时失败。
-- 连击会增加额外分数，点错会清空连击。
-- 没有可消除组合时会自动洗牌。
-- 提示按钮会自动标出一对可消除麻将；静置一段时间也会自动提示。
+```text
+Main
+├── Background
+├── Board
+├── UI
+├── Effects
+└── Audio
+```
 
-## 视觉与交互
+- `Main.tscn`：游戏主场景，挂载 `game_manager.gd`。
+- `Board.tscn`：棋盘容器，自动生成麻将布局。
+- `Tile.tscn`：单张 2.5D 麻将牌，支持点击、选中、消除。
+- `UI.tscn`：分数、倒计时、Combo、剩余数量、洗牌/提示/重来按钮。
 
-- 背景是绿色麻将桌面。
-- 麻将牌由 Canvas 绘制白底、圆角、阴影、高光，再贴麻将图片。
-- 点击时有金色涟漪反馈，选中时放大并发光。
-- 成功消除时显示白色光线连线，牌会缩小淡出并爆出粒子。
-- 错误点击会红闪、抖动，并触发短震动。
-- 动画统一走 requestAnimationFrame，页面只在时间、分数、提示文字变化时 setData。
+## 3. 核心脚本
+
+- `scripts/game_manager.gd`：游戏流程、关卡、分数、倒计时、Combo、广告预留调用。
+- `scripts/board.gd`：棋盘生成、Tile 对象池、动态布局、洗牌和提示。
+- `scripts/tile.gd`：2.5D 麻将牌外观、点击反馈、选中发光、消除 Tween。
+- `scripts/match.gd`：最多 2 次转折的连连看路径算法。
+- `scripts/effects.gd`：连线、粒子、错误红闪、抖动、Combo UI 动画。
+- `scripts/ui.gd`：现代化大按钮、大字体 HUD、半透明棋牌风 UI。
+- `autoload/Global.gd`：关卡配置、全局常量、激励广告接口预留。
+
+## 4. UI 方案
+
+- 深绿色棋牌桌渐变背景。
+- 顶部半透明信息面板：分数、时间、剩余麻将数、Combo。
+- 底部大按钮：洗牌、提示、重来。
+- 按钮使用代码生成的圆角渐变风格，避免默认 Godot 按钮观感。
+- 字号偏大，适合中老年用户阅读和触摸。
+
+## 5. 动效方案
+
+- 点击麻将：`Tween` 放大到 1.08，再回弹。
+- 选中麻将：`Tween` 弹起、放大、发光描边。
+- 连线成功：`Line2D` 发光路径线。
+- 消除：麻将缩小、fade out，并在两张牌位置触发 `CPUParticles2D` 粒子爆开。
+- 连击：显示 `COMBO xN`，UI 轻微弹动。
+- 错误点击：背景红闪，棋盘轻微抖动。
+
+## 6. 性能方案
+
+- 棋盘使用对象池，不频繁销毁和重建 Tile。
+- 动画集中使用 `Tween`、`Line2D`、`CPUParticles2D`。
+- 不使用大量 `_process` 手写硬动画。
+- 资源沿用压缩 PNG，后续微信小游戏导出时可继续压缩和分包。
+- 棋盘规模由关卡配置控制，方便低端手机调参。
+
+## 7. 关卡系统
+
+已预置：
+
+- Level 1：5 x 6，10 种牌。
+- Level 2：6 x 6，12 种牌。
+- Level 3：7 x 6，16 种牌。
+
+后续可在 `autoload/Global.gd` 的 `LEVELS` 中继续扩展。
+
+## 8. 商业化预留
+
+`Global.request_rewarded_ad(reason)` 已预留：
+
+- `hint`：提示按钮可接激励视频。
+- `shuffle`：洗牌按钮可接激励视频。
+- `revive`：失败复活可接激励视频。
+
+当前不会接入 SDK，只保留结构。
+
+## 9. 微信小游戏导出注意事项
+
+- 当前工程按 Godot 4 移动端渲染设置建立。
+- 后续导出微信小游戏建议走 Godot 微信小游戏适配工具链，例如 `godot-love-wechat` 方向。
+- 避免引入原生插件和不兼容 API。
+- 控制 PNG、音频和粒子资源体积，必要时将资源分包。
+- 保持竖屏 720 x 1280 设计，触摸优先。
+- 导出前需要在 Godot 中打开项目，让 `.godot/` 导入缓存生成后再测试。
 
 ## 运行
 
-使用微信开发者工具打开本目录，选择“小程序”项目即可预览。
+用 Godot 4 打开本目录：
+
+```text
+/Users/sweetwater77/Documents/MahjongBump
+```
+
+主场景：
+
+```text
+res://scenes/Main.tscn
+```
