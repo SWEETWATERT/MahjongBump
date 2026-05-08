@@ -1,4 +1,5 @@
 const Match = require("./match");
+const Tile = require("./tile");
 
 function shuffleArray(items) {
   const result = items.slice();
@@ -20,8 +21,10 @@ function shuffleBoard(board, rows, cols) {
   });
 
   cells.forEach((cell, index) => {
-    cell.tileId = tileIds[index];
-    cell.label = labels[tileIds[index]] || cell.label;
+    const meta = Tile.byId(tileIds[index]);
+    cell.tileId = meta.id;
+    cell.label = labels[tileIds[index]] || meta.label;
+    cell.image = meta.image;
   });
 
   return Match.findAvailablePair(board, rows, cols);

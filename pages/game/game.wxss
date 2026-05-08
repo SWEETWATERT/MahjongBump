@@ -1,18 +1,20 @@
 page {
   min-height: 100vh;
-  background: #0d7a4d;
+  background: #074629;
 }
 
 .container {
   min-height: 100vh;
   box-sizing: border-box;
-  padding: 24rpx 24rpx 36rpx;
-  background: linear-gradient(180deg, #118454 0%, #0b6e45 48%, #075c39 100%);
+  padding: 26rpx 24rpx 38rpx;
+  background:
+    radial-gradient(circle at 50% 16%, rgba(255, 245, 180, 0.18), transparent 34%),
+    linear-gradient(180deg, #159260 0%, #0a6f46 48%, #053e29 100%);
 }
 
 .top-bar {
   display: flex;
-  gap: 14rpx;
+  gap: 12rpx;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 18rpx;
@@ -20,27 +22,28 @@ page {
 
 .info-pill {
   flex: 1;
-  min-height: 78rpx;
-  line-height: 78rpx;
+  min-height: 84rpx;
+  line-height: 84rpx;
   text-align: center;
-  border-radius: 16rpx;
-  color: #fff7d7;
-  background: rgba(2, 65, 37, 0.76);
-  box-shadow: inset 0 2rpx 0 rgba(255, 255, 255, 0.18), 0 8rpx 16rpx rgba(0, 0, 0, 0.18);
+  border-radius: 18rpx;
+  color: #fff5c8;
+  background: rgba(3, 48, 31, 0.82);
+  box-shadow: inset 0 3rpx 0 rgba(255, 255, 255, 0.18), 0 10rpx 20rpx rgba(0, 0, 0, 0.22);
   font-size: 34rpx;
   font-weight: 700;
 }
 
 .notice {
-  min-height: 68rpx;
-  line-height: 68rpx;
+  min-height: 72rpx;
+  line-height: 72rpx;
   margin-bottom: 16rpx;
-  border-radius: 14rpx;
+  border-radius: 18rpx;
   text-align: center;
   color: #ffffff;
-  background: rgba(255, 255, 255, 0.13);
-  font-size: 30rpx;
-  font-weight: 600;
+  background: rgba(255, 255, 255, 0.14);
+  box-shadow: inset 0 2rpx 0 rgba(255, 255, 255, 0.12);
+  font-size: 32rpx;
+  font-weight: 700;
 }
 
 .notice.error {
@@ -56,8 +59,8 @@ page {
 .game-canvas {
   display: block;
   margin: 0 auto 24rpx;
-  border-radius: 26rpx;
-  box-shadow: inset 0 6rpx 18rpx rgba(0, 0, 0, 0.18), 0 14rpx 30rpx rgba(0, 0, 0, 0.24);
+  border-radius: 32rpx;
+  box-shadow: inset 0 8rpx 22rpx rgba(0, 0, 0, 0.22), 0 18rpx 34rpx rgba(0, 0, 0, 0.3);
 }
 
 .bottom-bar {
@@ -68,13 +71,13 @@ page {
 
 .action-button {
   flex: 1;
-  min-height: 96rpx;
-  line-height: 96rpx;
+  min-height: 104rpx;
+  line-height: 104rpx;
   padding: 0;
-  border-radius: 18rpx;
-  color: #0c5436;
-  background: #fff8d8;
-  box-shadow: 0 8rpx 0 #d3a83f, 0 12rpx 22rpx rgba(0, 0, 0, 0.22);
+  border-radius: 22rpx;
+  color: #0a5637;
+  background: linear-gradient(180deg, #fffef5 0%, #ffe68f 100%);
+  box-shadow: 0 9rpx 0 #c99624, 0 14rpx 24rpx rgba(0, 0, 0, 0.25);
   font-size: 36rpx;
   font-weight: 800;
 }
@@ -85,6 +88,6 @@ page {
 
 .action-button.primary {
   color: #ffffff;
-  background: #f6a623;
-  box-shadow: 0 8rpx 0 #bc7211, 0 12rpx 22rpx rgba(0, 0, 0, 0.24);
+  background: linear-gradient(180deg, #ffbd45 0%, #f0831c 100%);
+  box-shadow: 0 9rpx 0 #a85b12, 0 14rpx 24rpx rgba(0, 0, 0, 0.27);
 }

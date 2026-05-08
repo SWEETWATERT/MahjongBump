@@ -1,7 +1,6 @@
 {
   "pages": [
-    "pages/game/game",
-    "pages/index/index"
+    "pages/game/game"
   ],
   "window": {
     "navigationBarTitleText": "麻将对对碰",

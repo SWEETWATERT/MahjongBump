@@ -1,7 +1,10 @@
-const Board = require("../../components/board/board");
+const Board = require("../../utils/board");
+const Effect = require("../../utils/effect");
 const Match = require("../../utils/match");
 const Shuffle = require("../../utils/shuffle");
 const Timer = require("../../utils/timer");
+const Ui = require("../../utils/ui");
+const Tile = require("../../utils/tile");
 
 const ROWS = 7;
 const COLS = 6;
@@ -12,272 +15,296 @@ Page({
     time: TOTAL_TIME,
     score: 0,
     combo: 0,
-    message: "点击两张相同麻将牌，最多2折线即可消除",
+    message: "点击两张相同麻将，最多2折线消除",
     noticeType: "",
     canvasWidth: 360,
-    canvasHeight: 480
+    canvasHeight: 500
   },
 
   onLoad() {
     const systemInfo = wx.getSystemInfoSync();
-    this.metrics = Board.createMetrics(systemInfo.windowWidth, ROWS, COLS);
+    this.layout = Board.createLayout(systemInfo.windowWidth, ROWS, COLS);
+    this.ui = Ui.createUi(this);
+    this.game = {
+      time: TOTAL_TIME,
+      score: 0,
+      combo: 0,
+      selected: null,
+      hintIds: [],
+      finished: false
+    };
     this.board = Board.createBoard(ROWS, COLS);
-    this.selected = null;
-    this.linePath = [];
-    this.hintIds = [];
-    this.particles = [];
+    this.images = {};
     this.autoHintTimer = null;
-    this.finished = false;
-    this.setData({
-      canvasWidth: this.metrics.width,
-      canvasHeight: this.metrics.height
-    });
+    this.ui.init(this.layout);
   },
 
   onReady() {
-    this.ctx = wx.createCanvasContext("gameCanvas", this);
-    this.updateCanvasRect();
-    this.timer = Timer.createCountdown({
-      seconds: TOTAL_TIME,
-      onTick: (time) => this.setData({ time }),
-      onDone: () => this.finishGame(false)
+    this.setupCanvas(() => {
+      this.effect = Effect.createEffectEngine(this.canvas, () => this.render());
+      this.requestFrame = this.canvas.requestAnimationFrame ?
+        this.canvas.requestAnimationFrame.bind(this.canvas) :
+        (callback) => setTimeout(callback, 16);
+      this.effect.start();
+      this.loadImages();
+      this.startTimer(TOTAL_TIME);
+      this.scheduleAutoHint();
+      this.render();
     });
-    this.timer.start(TOTAL_TIME);
-    this.draw();
-    this.scheduleAutoHint();
   },
 
-  onUnload() {
-    this.clearTimers();
+  onShow() {
+    if (this.timer && !this.game.finished && this.game.time > 0) {
+      this.startTimer(this.game.time);
+      this.scheduleAutoHint();
+    }
+    if (this.effect) {
+      this.effect.start();
+    }
   },
 
   onHide() {
+    this.pauseRuntime();
+  },
+
+  onUnload() {
+    this.pauseRuntime();
+    if (this.effect) {
+      this.effect.stop();
+    }
+  },
+
+  setupCanvas(callback) {
+    wx.createSelectorQuery()
+      .in(this)
+      .select("#gameCanvas")
+      .fields({ node: true, size: true, rect: true })
+      .exec((result) => {
+        const info = result && result[0];
+        if (!info || !info.node) {
+          this.ui.message("当前微信版本不支持2D Canvas，请升级后再试", "error");
+          return;
+        }
+        this.canvasRect = info;
+        this.canvas = info.node;
+        this.ctx = this.canvas.getContext("2d");
+        const dpr = wx.getSystemInfoSync().pixelRatio || 1;
+        this.canvas.width = this.layout.width * dpr;
+        this.canvas.height = this.layout.height * dpr;
+        this.ctx.scale(dpr, dpr);
+        callback();
+      });
+  },
+
+  loadImages() {
+    Tile.TILE_LIBRARY.forEach((tile) => {
+      const image = this.canvas.createImage();
+      image.onload = () => {
+        this.images[tile.id] = image;
+        this.render();
+      };
+      image.src = tile.image;
+    });
+  },
+
+  startTimer(seconds) {
+    if (!this.timer) {
+      this.timer = Timer.createCountdown({
+        seconds: TOTAL_TIME,
+        onTick: (time) => {
+          this.game.time = time;
+          this.ui.hud(this.game);
+        },
+        onDone: () => this.finish(false)
+      });
+    }
+    this.timer.start(seconds || TOTAL_TIME);
+  },
+
+  pauseRuntime() {
     if (this.timer) {
       this.timer.stop();
     }
     this.clearAutoHint();
   },
 
-  onShow() {
-    if (this.ctx && !this.finished && this.timer) {
-      this.timer.start(this.data.time);
-      this.scheduleAutoHint();
+  canvasPoint(event) {
+    const touch = event.touches && event.touches[0] ? event.touches[0] : null;
+    if (!touch || !this.canvasRect) {
+      return { x: 0, y: 0 };
     }
-  },
-
-  updateCanvasRect(callback) {
-    wx.createSelectorQuery()
-      .in(this)
-      .select("#gameCanvas")
-      .boundingClientRect((rect) => {
-        if (rect) {
-          this.canvasRect = rect;
-        }
-        if (callback) {
-          callback();
-        }
-      })
-      .exec();
-  },
-
-  getCanvasPoint(event) {
-    const touch = event.touches && event.touches[0] ? event.touches[0] :
-      event.changedTouches && event.changedTouches[0] ? event.changedTouches[0] :
-        null;
-
-    if (touch && this.canvasRect && touch.clientX !== undefined && touch.clientY !== undefined) {
-      return {
-        x: (touch.clientX - this.canvasRect.left) * this.metrics.width / this.canvasRect.width,
-        y: (touch.clientY - this.canvasRect.top) * this.metrics.height / this.canvasRect.height
-      };
-    }
-
-    if (touch && touch.x !== undefined && touch.y !== undefined) {
-      return {
-        x: touch.x * this.metrics.width / (this.canvasRect ? this.canvasRect.width : this.metrics.width),
-        y: touch.y * this.metrics.height / (this.canvasRect ? this.canvasRect.height : this.metrics.height)
-      };
-    }
-
-    const detail = event.detail || {};
     return {
-      x: detail.x || 0,
-      y: detail.y || 0
+      x: (touch.clientX - this.canvasRect.left) * this.layout.width / this.canvasRect.width,
+      y: (touch.clientY - this.canvasRect.top) * this.layout.height / this.canvasRect.height
     };
   },
 
   onCanvasTouch(event) {
-    if (this.finished || this.data.time <= 0) {
+    if (this.game.finished || this.game.time <= 0) {
       return;
     }
 
-    const point = this.getCanvasPoint(event);
-    const cell = Board.tileAtPoint(this.board, this.metrics, point.x, point.y);
-    if (!cell) {
+    const point = this.canvasPoint(event);
+    const tile = Board.tileAt(this.board, this.layout, point.x, point.y);
+    if (!tile) {
       return;
     }
 
     this.clearAutoHint();
-    this.hintIds = [];
+    this.game.hintIds = [];
+    this.effect.clearLine();
 
-    if (!this.selected) {
-      this.selected = cell;
-      this.setData({ message: "已选中，再点一张相同麻将", noticeType: "" });
-      this.draw();
+    if (!this.game.selected) {
+      this.game.selected = tile;
+      this.ui.message("已选中，再点一张相同麻将", "");
       this.scheduleAutoHint();
       return;
     }
 
-    if (this.selected.id === cell.id) {
-      this.selected = null;
-      this.draw();
+    if (this.game.selected.id === tile.id) {
+      this.game.selected = null;
+      this.ui.message("已取消选择", "");
       this.scheduleAutoHint();
       return;
     }
 
-    const result = Match.canConnect(this.board, ROWS, COLS, this.selected, cell);
+    const result = Match.canConnect(this.board, ROWS, COLS, this.game.selected, tile);
     if (result.ok) {
-      this.handleSuccess(this.selected, cell, result.path);
+      this.removePair(this.game.selected, tile, result.path);
     } else {
-      this.handleError("这两张连不上，最多只能转2次弯");
+      this.wrongPick();
     }
   },
 
-  handleSuccess(first, second, path) {
-    this.linePath = path;
-    this.setData({
-      score: this.data.score + 10 + this.data.combo * 3,
-      combo: this.data.combo + 1,
-      message: "消除成功",
-      noticeType: "success"
-    });
-    this.draw();
+  removePair(first, second, path) {
+    this.effect.playLine(path);
+    this.game.score += 10 + this.game.combo * 4;
+    this.game.combo += 1;
+    this.game.selected = null;
+    this.ui.hud(this.game);
+    this.ui.message("连上了，继续", "success");
 
-    setTimeout(() => {
-      first.removed = true;
-      second.removed = true;
-      this.selected = null;
-      this.linePath = [];
-      this.playParticles([first, second]);
-      this.afterRemove();
-    }, 220);
+    first.removing = true;
+    second.removing = true;
+    this.animateRemove(first, second, 0);
   },
 
-  handleError(message) {
-    this.selected = null;
-    this.setData({ combo: 0, message, noticeType: "error" });
+  animateRemove(first, second, frame) {
+    const progress = Math.min(1, frame / 14);
+    first.removeProgress = progress;
+    second.removeProgress = progress;
+
+    if (progress < 1) {
+      this.requestFrame(() => this.animateRemove(first, second, frame + 1));
+      return;
+    }
+
+    first.removed = true;
+    second.removed = true;
+    first.removing = false;
+    second.removing = false;
+    this.effect.playParticles(this.layout, [first, second]);
+    setTimeout(() => this.effect.clearLine(), 130);
+    this.afterRemove();
+  },
+
+  wrongPick() {
+    this.game.selected = null;
+    this.game.combo = 0;
+    this.ui.hud(this.game);
+    this.ui.message("没连上，只能最多转2次弯", "error");
+    this.effect.playError();
     if (wx.vibrateShort) {
       wx.vibrateShort({ type: "medium" });
     }
-
-    this.errorFlash = true;
-    this.draw();
-    setTimeout(() => {
-      this.errorFlash = false;
-      this.draw();
-      this.scheduleAutoHint();
-    }, 180);
+    this.scheduleAutoHint();
   },
 
   afterRemove() {
-    if (Match.activeCells(this.board).length === 0) {
-      this.finishGame(true);
+    if (!Board.activeTiles(this.board).length) {
+      this.finish(true);
       return;
     }
 
-    const move = Match.findAvailablePair(this.board, ROWS, COLS);
-    if (!move) {
-      Shuffle.ensurePlayable(this.board, ROWS, COLS, 60);
-      this.setData({ message: "没有可消除组合，已自动洗牌", noticeType: "" });
+    if (!Match.findAvailablePair(this.board, ROWS, COLS)) {
+      Shuffle.ensurePlayable(this.board, ROWS, COLS, 80);
+      this.ui.message("没有可消除组合，已自动洗牌", "");
     }
-    this.draw();
     this.scheduleAutoHint();
   },
 
   onShuffle() {
-    if (this.finished) {
+    if (this.game.finished) {
       return;
     }
     this.clearAutoHint();
-    this.selected = null;
+    this.game.selected = null;
+    this.game.hintIds = [];
+    this.game.combo = 0;
+    this.game.score = Math.max(0, this.game.score - 5);
     Shuffle.ensurePlayable(this.board, ROWS, COLS, 80);
-    this.setData({
-      score: Math.max(0, this.data.score - 5),
-      combo: 0,
-      message: "已洗牌",
-      noticeType: ""
-    });
-    this.draw();
+    this.ui.hud(this.game);
+    this.ui.message("已洗牌", "");
     this.scheduleAutoHint();
   },
 
   onHint() {
-    if (this.finished) {
+    if (this.game.finished) {
       return;
     }
     this.clearAutoHint();
     const move = Match.findAvailablePair(this.board, ROWS, COLS);
     if (!move) {
       Shuffle.ensurePlayable(this.board, ROWS, COLS, 80);
-      this.setData({ message: "已自动洗牌，请再试一次", noticeType: "" });
-      this.draw();
+      this.ui.message("已自动洗牌，请再试", "");
       this.scheduleAutoHint();
       return;
     }
 
-    this.hintIds = [move.first.id, move.second.id];
-    this.linePath = move.path;
-    this.setData({ message: "提示已标出一对可消除麻将", noticeType: "success" });
-    this.draw();
+    this.game.hintIds = [move.first.id, move.second.id];
+    this.effect.playLine(move.path);
+    this.ui.message("提示已标出一对", "success");
     setTimeout(() => {
-      this.hintIds = [];
-      this.linePath = [];
-      this.draw();
+      this.game.hintIds = [];
+      this.effect.clearLine();
       this.scheduleAutoHint();
-    }, 1200);
+    }, 1300);
   },
 
   onRestart() {
-    this.clearTimers();
+    this.pauseRuntime();
     this.board = Board.createBoard(ROWS, COLS);
-    this.selected = null;
-    this.linePath = [];
-    this.hintIds = [];
-    this.particles = [];
-    this.finished = false;
-    this.setData({
+    this.game = {
       time: TOTAL_TIME,
       score: 0,
       combo: 0,
-      message: "新一局开始，60秒内全部消除",
-      noticeType: ""
-    });
-    this.timer.reset(TOTAL_TIME);
-    this.draw();
+      selected: null,
+      hintIds: [],
+      finished: false
+    };
+    this.effect.clearLine();
+    this.ui.reset();
+    this.ui.init(this.layout);
+    this.ui.message("新一局开始，60秒内全部消除", "");
+    this.startTimer(TOTAL_TIME);
     this.scheduleAutoHint();
   },
 
-  finishGame(win) {
-    this.finished = true;
-    this.clearTimers();
-    this.selected = null;
-    this.linePath = [];
-    this.hintIds = [];
-    this.setData({
-      message: win ? "恭喜过关" : "时间到，点重来再挑战",
-      noticeType: win ? "success" : "error"
-    });
-    this.draw();
+  finish(win) {
+    this.game.finished = true;
+    this.pauseRuntime();
+    this.game.selected = null;
+    this.game.hintIds = [];
+    this.effect.clearLine();
+    this.ui.message(win ? "恭喜过关" : "时间到，点重来再挑战", win ? "success" : "error");
   },
 
   scheduleAutoHint() {
     this.clearAutoHint();
-    if (this.finished) {
+    if (this.game.finished) {
       return;
     }
-    this.autoHintTimer = setTimeout(() => {
-      this.onHint();
-    }, 8000);
+    this.autoHintTimer = setTimeout(() => this.onHint(), 8500);
   },
 
   clearAutoHint() {
@@ -287,56 +314,19 @@ Page({
     }
   },
 
-  clearTimers() {
-    if (this.timer) {
-      this.timer.stop();
-    }
-    this.clearAutoHint();
-  },
-
-  playParticles(cells) {
-    const colors = ["#ffffff", "#fff176", "#ffdd6e", "#bfffd6"];
-    this.particles = [];
-    cells.forEach((cell) => {
-      for (let i = 0; i < 8; i += 1) {
-        this.particles.push({
-          row: cell.row,
-          col: cell.col,
-          x: (Math.random() - 0.5) * 46,
-          y: (Math.random() - 0.5) * 56,
-          radius: 3 + Math.random() * 4,
-          alpha: 1,
-          color: colors[i % colors.length]
-        });
-      }
-    });
-    this.animateParticles(0);
-  },
-
-  animateParticles(frame) {
-    if (frame > 9) {
-      this.particles = [];
-      this.draw();
+  render() {
+    if (!this.ctx || !this.board) {
       return;
     }
-    this.particles.forEach((particle) => {
-      particle.y -= 3;
-      particle.alpha = Math.max(0, particle.alpha - 0.1);
+    Board.drawBoard(this.ctx, this.board, this.layout, {
+      selectedId: this.game.selected ? this.game.selected.id : "",
+      hintIds: this.game.hintIds,
+      images: this.images,
+      errorProgress: this.effect ? this.effect.state.errorProgress : 0
     });
-    this.draw();
-    setTimeout(() => this.animateParticles(frame + 1), 35);
-  },
-
-  draw() {
-    if (!this.ctx || !this.board || !this.metrics) {
-      return;
+    if (this.effect) {
+      this.effect.drawLine(this.ctx, this.layout);
+      this.effect.drawParticles(this.ctx);
     }
-    Board.drawBoard(this.ctx, this.board, this.metrics, {
-      selected: this.selected,
-      hintIds: this.hintIds,
-      linePath: this.linePath,
-      particles: this.particles,
-      errorFlash: this.errorFlash
-    });
   }
 });
