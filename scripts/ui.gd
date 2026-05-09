@@ -11,12 +11,14 @@ signal restart_requested
 @onready var combo_label: Label = $TopPanel/ComboLabel
 @onready var message_label: Label = $MessageLabel
 @onready var top_panel: Panel = $TopPanel
+@onready var bottom_dock: Panel = $BottomDock
 @onready var shuffle_button: Button = $BottomPanel/ShuffleButton
 @onready var hint_button: Button = $BottomPanel/HintButton
 @onready var restart_button: Button = $BottomPanel/RestartButton
 
 func _ready() -> void:
 	_style_panel()
+	_style_bottom_dock()
 	shuffle_button.pressed.connect(func() -> void: shuffle_requested.emit())
 	hint_button.pressed.connect(func() -> void: hint_requested.emit())
 	restart_button.pressed.connect(func() -> void: restart_requested.emit())
@@ -44,6 +46,7 @@ func show_message(text: String, success := false) -> void:
 	message_label.modulate = Color(1.0, 0.92, 0.35) if success else Color.WHITE
 
 func _style_button(button: Button, bg: Color, fg: Color) -> void:
+	button.add_theme_font_override("font", Global.ui_font())
 	var style := StyleBoxFlat.new()
 	style.bg_color = bg
 	style.border_width_top = 2
@@ -51,13 +54,13 @@ func _style_button(button: Button, bg: Color, fg: Color) -> void:
 	style.border_width_right = 2
 	style.border_width_bottom = 4
 	style.border_color = bg.lightened(0.28)
-	style.corner_radius_top_left = 22
-	style.corner_radius_top_right = 22
-	style.corner_radius_bottom_left = 22
-	style.corner_radius_bottom_right = 22
-	style.shadow_color = Color(0, 0, 0, 0.34)
-	style.shadow_size = 14
-	style.shadow_offset = Vector2(0, 7)
+	style.corner_radius_top_left = 18
+	style.corner_radius_top_right = 18
+	style.corner_radius_bottom_left = 18
+	style.corner_radius_bottom_right = 18
+	style.shadow_color = Color(0, 0, 0, 0.42)
+	style.shadow_size = 18
+	style.shadow_offset = Vector2(0, 8)
 	var pressed := style.duplicate()
 	pressed.bg_color = bg.darkened(0.10)
 	pressed.shadow_size = 4
@@ -72,18 +75,29 @@ func _style_button(button: Button, bg: Color, fg: Color) -> void:
 
 func _style_panel() -> void:
 	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0.02, 0.16, 0.10, 0.72)
-	style.corner_radius_top_left = 26
-	style.corner_radius_top_right = 26
-	style.corner_radius_bottom_left = 26
-	style.corner_radius_bottom_right = 26
-	style.border_width_bottom = 2
-	style.border_color = Color(1, 0.9, 0.45, 0.25)
-	style.shadow_color = Color(0, 0, 0, 0.30)
-	style.shadow_size = 14
+	style.bg_color = Color(0.00, 0.13, 0.10, 0.86)
+	style.corner_radius_top_left = 24
+	style.corner_radius_top_right = 24
+	style.corner_radius_bottom_left = 24
+	style.corner_radius_bottom_right = 24
+	style.border_width_bottom = 3
+	style.border_color = Color(1, 0.78, 0.10, 0.44)
+	style.shadow_color = Color(0, 0, 0, 0.42)
+	style.shadow_size = 18
 	top_panel.add_theme_stylebox_override("panel", style)
 
+func _style_bottom_dock() -> void:
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(0.00, 0.12, 0.09, 0.88)
+	style.border_width_top = 2
+	style.border_color = Color(1, 0.77, 0.10, 0.35)
+	style.shadow_color = Color(0, 0, 0, 0.48)
+	style.shadow_size = 18
+	style.shadow_offset = Vector2(0, -5)
+	bottom_dock.add_theme_stylebox_override("panel", style)
+
 func _style_label(target: Label, color := Color.WHITE) -> void:
+	target.add_theme_font_override("font", Global.ui_font())
 	target.add_theme_color_override("font_color", color)
 	target.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.48))
 	target.add_theme_constant_override("shadow_offset_x", 2)

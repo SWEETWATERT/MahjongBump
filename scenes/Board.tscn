@@ -1,12 +1,26 @@
-[gd_scene load_steps=3 format=3 uid="uid://mahjong_board"]
+[gd_scene load_steps=5 format=3 uid="uid://mahjong_board"]
 
 [ext_resource type="Script" path="res://scripts/board.gd" id="1"]
 [ext_resource type="PackedScene" path="res://scenes/Tile.tscn" id="2"]
+[ext_resource type="Shader" path="res://shaders/table_felt.gdshader" id="3"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_table"]
+shader = ExtResource("3")
 
 [node name="Board" type="Node2D"]
 script = ExtResource("1")
 tile_scene = ExtResource("2")
 
+[node name="TableShadow" type="Polygon2D" parent="."]
+position = Vector2(0, 16)
+color = Color(0, 0, 0, 0.32)
+polygon = PackedVector2Array(-350, -490, 350, -490, 350, 490, -350, 490)
+
+[node name="TableRim" type="Polygon2D" parent="."]
+color = Color(0.009804, 0.139216, 0.086275, 1)
+polygon = PackedVector2Array(-342, -482, 342, -482, 342, 482, -342, 482)
+
 [node name="Table" type="Polygon2D" parent="."]
-color = Color(0.031373, 0.396078, 0.239216, 1)
-polygon = PackedVector2Array(-330, -470, 330, -470, 330, 470, -330, 470)
+material = SubResource("ShaderMaterial_table")
+color = Color(1, 1, 1, 1)
+polygon = PackedVector2Array(-328, -468, 328, -468, 328, 468, -328, 468)
