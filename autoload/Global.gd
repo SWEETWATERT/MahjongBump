@@ -4,6 +4,7 @@ const START_TIME := 60
 const COMBO_WINDOW := 2.0
 const TILE_SIZE := Vector2(78, 98)
 const TILE_GAP := Vector2(10, 10)
+const UI_FONT_PATH := "res://assets/fonts/mahjong_cjk_subset.ttf"
 
 const LEVELS := [
 	{
@@ -30,6 +31,14 @@ const LEVELS := [
 ]
 
 var current_level := 1
+var _ui_font: FontFile
+
+func ui_font() -> Font:
+	if _ui_font == null:
+		_ui_font = load(UI_FONT_PATH)
+		if _ui_font == null:
+			push_warning("Failed to load UI font: %s" % UI_FONT_PATH)
+	return _ui_font
 
 func get_level_config(level: int) -> Dictionary:
 	var safe_index := clampi(level - 1, 0, LEVELS.size() - 1)
